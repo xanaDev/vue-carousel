@@ -3,33 +3,34 @@
     class="VueCarousel"
     v-bind:class="{ 'VueCarousel--reverse': paginationPosition === 'top' }"
   >
-    <div
-      class="VueCarousel-wrapper"
-      ref="VueCarousel-wrapper"
-    >
+    <div class="VueCarousel-wrapper" ref="VueCarousel-wrapper">
       <div
         ref="VueCarousel-inner"
         :class="[
           'VueCarousel-inner',
-          { 'VueCarousel-inner--center': isCenterModeEnabled }
+          { 'VueCarousel-inner--center': isCenterModeEnabled },
         ]"
         :style="{
-          'transform': `translate(${currentOffset}px, 0)`,
-          'transition': dragging ? 'none' : transitionStyle,
+          transform: `translate(${currentOffset}px, 0)`,
+          transition: dragging ? 'none' : transitionStyle,
           'ms-flex-preferred-size': `${slideWidth}px`,
           'webkit-flex-basis': `${slideWidth}px`,
           'flex-basis': `${slideWidth}px`,
-          'visibility': slideWidth ? 'visible' : 'hidden',
-          'height': `${currentHeight}`,
+          visibility: slideWidth ? 'visible' : 'hidden',
+          height: `${currentHeight}`,
           'padding-left': `${padding}px`,
-          'padding-right': `${padding}px`
+          'padding-right': `${padding}px`,
         }"
       >
         <slot></slot>
       </div>
     </div>
 
-    <slot name="navigation" v-if="navigationEnabled">
+    <slot
+      name="navigation"
+      v-if="navigationEnabled"
+      :state="{ canAdvanceForward, canAdvanceBackward, handleNavigation }"
+    >
       <navigation
         v-if="isNavigationRequired"
         :clickTargetSize="navigationClickTargetSize"
@@ -40,7 +41,7 @@
     </slot>
 
     <slot name="pagination" v-if="paginationEnabled">
-      <pagination @paginationclick="goToPage($event, 'pagination')"/>
+      <pagination @paginationclick="goToPage($event, 'pagination')" />
     </slot>
   </div>
 </template>
@@ -55,13 +56,13 @@ const transitionStartNames = {
   onwebkittransitionstart: "webkitTransitionStart",
   onmoztransitionstart: "transitionstart",
   onotransitionstart: "oTransitionStart otransitionstart",
-  ontransitionstart: "transitionstart"
+  ontransitionstart: "transitionstart",
 };
 const transitionEndNames = {
   onwebkittransitionend: "webkitTransitionEnd",
   onmoztransitionend: "transitionend",
   onotransitionend: "oTransitionEnd otransitionend",
-  ontransitionend: "transitionend"
+  ontransitionend: "transitionend",
 };
 const getTransitionStart = () => {
   for (let name in transitionStartNames) {
@@ -86,7 +87,7 @@ export default {
   components: {
     Navigation,
     Pagination,
-    Slide
+    Slide,
   },
   data() {
     return {
@@ -104,14 +105,14 @@ export default {
       slideCount: 0,
       transitionstart: "transitionstart",
       transitionend: "transitionend",
-      currentHeight: "auto"
+      currentHeight: "auto",
     };
   },
   mixins: [autoplay],
   // use `provide` to avoid `Slide` being nested with other components
   provide() {
     return {
-      carousel: this
+      carousel: this,
     };
   },
   props: {
@@ -120,21 +121,21 @@ export default {
      */
     adjustableHeight: {
       type: Boolean,
-      default: false
+      default: false,
     },
     /**
      * Slide transition easing for adjustableHeight
      * Any valid CSS transition easing accepted
      */
     adjustableHeightEasing: {
-      type: String
+      type: String,
     },
     /**
      *  Center images when the size is less than the container width
      */
     centerMode: {
       type: Boolean,
-      default: false
+      default: false,
     },
     /**
      * Slide transition easing
@@ -142,21 +143,21 @@ export default {
      */
     easing: {
       type: String,
-      validator: function(value) {
+      validator: function (value) {
         return (
           ["ease", "linear", "ease-in", "ease-out", "ease-in-out"].indexOf(
             value
           ) !== -1 || value.includes("cubic-bezier")
         );
       },
-      default: "ease"
+      default: "ease",
     },
     /**
      * Flag to make the carousel loop around when it reaches the end
      */
     loop: {
       type: Boolean,
-      default: false
+      default: false,
     },
     /**
      * Minimum distance for the swipe to trigger
@@ -164,35 +165,35 @@ export default {
      */
     minSwipeDistance: {
       type: Number,
-      default: 8
+      default: 8,
     },
     /**
      * Flag to toggle mouse dragging
      */
     mouseDrag: {
       type: Boolean,
-      default: true
+      default: true,
     },
     /**
      * Flag to toggle touch dragging
      */
     touchDrag: {
       type: Boolean,
-      default: true
+      default: true,
     },
     /**
      * Listen for an external navigation request using this prop.
      */
     navigateTo: {
       type: [Number, Array],
-      default: 0
+      default: 0,
     },
     /**
      * Amount of padding to apply around the label in pixels
      */
     navigationClickTargetSize: {
       type: Number,
-      default: 8
+      default: 8,
     },
     /**
      * Flag to render the navigation component
@@ -200,21 +201,21 @@ export default {
      */
     navigationEnabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
     /**
      * Text content of the navigation next button
      */
     navigationNextLabel: {
       type: String,
-      default: "&#9654"
+      default: "&#9654",
     },
     /**
      * Text content of the navigation prev button
      */
     navigationPrevLabel: {
       type: String,
-      default: "&#9664"
+      default: "&#9664",
     },
     /**
      * The fill color of the active pagination dot
@@ -222,7 +223,7 @@ export default {
      */
     paginationActiveColor: {
       type: String,
-      default: "#000000"
+      default: "#000000",
     },
     /**
      * The fill color of pagination dots
@@ -230,14 +231,14 @@ export default {
      */
     paginationColor: {
       type: String,
-      default: "#efefef"
+      default: "#efefef",
     },
     /**
      * Flag to render pagination component
      */
     paginationEnabled: {
       type: Boolean,
-      default: true
+      default: true,
     },
     /**
      * The padding inside each pagination dot
@@ -245,7 +246,7 @@ export default {
      */
     paginationPadding: {
       type: Number,
-      default: 10
+      default: 10,
     },
     /**
      * Configure the position for the pagination component.
@@ -253,7 +254,7 @@ export default {
      */
     paginationPosition: {
       type: String,
-      default: "bottom"
+      default: "bottom",
     },
     /**
      * The size of each pagination dot
@@ -261,14 +262,14 @@ export default {
      */
     paginationSize: {
       type: Number,
-      default: 10
+      default: 10,
     },
     /**
      * Maximum number of slides displayed on each page
      */
     perPage: {
       type: Number,
-      default: 2
+      default: 2,
     },
     /**
      * Configure the number of visible slides with a particular browser width.
@@ -277,7 +278,7 @@ export default {
      * ex. [1199, 4] means if (window <= 1199) then show 4 slides per page
      */
     perPageCustom: {
-      type: Array
+      type: Array,
     },
     /**
      * Resistance coefficient to dragging on the edge of the carousel
@@ -285,28 +286,28 @@ export default {
      */
     resistanceCoef: {
       type: Number,
-      default: 20
+      default: 20,
     },
     /**
      * Scroll per page, not per item
      */
     scrollPerPage: {
       type: Boolean,
-      default: true
+      default: true,
     },
     /**
      *  Space padding option adds left and right padding style (in pixels) onto VueCarousel-inner.
      */
     spacePadding: {
       type: Number,
-      default: 0
+      default: 0,
     },
     /**
      *  Specify by how much should the space padding value be multiplied of, to re-arange the final slide padding.
      */
     spacePaddingMaxOffsetFactor: {
       type: Number,
-      default: 0
+      default: 0,
     },
     /**
      * Slide transition speed
@@ -314,7 +315,7 @@ export default {
      */
     speed: {
       type: Number,
-      default: 500
+      default: 500,
     },
     /**
      * Name (tag) of slide component
@@ -322,28 +323,28 @@ export default {
      */
     tagName: {
       type: String,
-      default: "slide"
+      default: "slide",
     },
     /**
      * Support for v-model functionality
      */
     value: {
-      type: Number
+      type: Number,
     },
     /**
      * Support Max pagination dot amount
      */
     maxPaginationDotCount: {
       type: Number,
-      default: -1
+      default: -1,
     },
     /**
      * Support right to left
      */
     rtl: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   watch: {
     value(val) {
@@ -375,7 +376,7 @@ export default {
             this.goToPage(val);
           });
         }
-      }
+      },
     },
     currentPage(val) {
       this.$emit("pageChange", val);
@@ -388,7 +389,7 @@ export default {
       } else {
         this.restartAutoplay();
       }
-    }
+    },
   },
   computed: {
     /**
@@ -404,13 +405,15 @@ export default {
       const breakpointArray = this.perPageCustom;
       const width = this.browserWidth;
 
-      const breakpoints = breakpointArray.sort(
-        (a, b) => (a[0] > b[0] ? -1 : 1)
+      const breakpoints = breakpointArray.sort((a, b) =>
+        a[0] > b[0] ? -1 : 1
       );
 
       // Reduce the breakpoints to entries where the width is in range
       // The breakpoint arrays are formatted as [widthToMatch, numberOfSlides]
-      const matches = breakpoints.filter(breakpoint => width >= breakpoint[0]);
+      const matches = breakpoints.filter(
+        (breakpoint) => width >= breakpoint[0]
+      );
 
       // If there is a match, the result should return only
       // the slide count from the first matching breakpoint
@@ -503,8 +506,9 @@ export default {
       const speed = `${this.speed / 1000}s`;
       const transtion = `${speed} ${this.easing} transform`;
       if (this.adjustableHeight) {
-        return `${transtion}, height ${speed} ${this.adjustableHeightEasing ||
-          this.easing}`;
+        return `${transtion}, height ${speed} ${
+          this.adjustableHeightEasing || this.easing
+        }`;
       }
 
       return transtion;
@@ -512,7 +516,7 @@ export default {
     padding() {
       const padding = this.spacePadding;
       return padding > 0 ? padding : false;
-    }
+    },
   },
   methods: {
     /**
@@ -573,14 +577,14 @@ export default {
       if (MutationObserver) {
         let config = {
           attributes: true,
-          data: true
+          data: true,
         };
         if (this.adjustableHeight) {
           config = {
             ...config,
             childList: true,
             subtree: true,
-            characterData: true
+            characterData: true,
           };
         }
         this.mutationObserver = new MutationObserver(() => {
@@ -667,7 +671,7 @@ export default {
         (this.$slots &&
           this.$slots.default &&
           this.$slots.default.filter(
-            slot =>
+            (slot) =>
               slot.tag &&
               slot.tag.match(`^vue-component-\\d+-${this.tagName}$`) !== null
           ).length) ||
@@ -679,7 +683,7 @@ export default {
      */
     getSlide(index) {
       const slides = this.$children.filter(
-        child =>
+        (child) =>
           child.$vnode.tag.match(`^vue-component-\\d+-${this.tagName}$`) !==
           null
       );
@@ -914,7 +918,7 @@ export default {
     handleTransitionEnd() {
       this.$emit("transitionEnd");
       this.$emit("transition-end");
-    }
+    },
   },
   mounted() {
     window.addEventListener(
@@ -968,7 +972,7 @@ export default {
       this.isTouch ? "touchstart" : "mousedown",
       this.onStart
     );
-  }
+  },
 };
 </script>
 <style>
